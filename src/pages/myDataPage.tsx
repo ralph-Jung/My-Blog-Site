@@ -4,6 +4,7 @@ import QueryUserInfo from "./QueryUserInfo";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Cookies from "js-cookie";
+import styled from "styled-components";
 function myData() {
     const navigate = useNavigate();
 
@@ -14,12 +15,12 @@ function myData() {
         isLoading: _isLoading,
     } = useQuery({
         queryKey: ["myData", token],
-        queryFn: () => QueryUserInfo(token),
+        queryFn: () => QueryUserInfo(),
     });
     console.log(data);
 
     return (
-        <div>
+        <MyInfoDiv>
             <div> &lt; 내 정보 &gt;</div>
             <div>
                 <div>id:{data?.id}</div>
@@ -27,7 +28,17 @@ function myData() {
                 <div>role:{data?.role}</div>
             </div>
             <button onClick={() => navigate(-1)}>뒤로가기</button>
-        </div>
+        </MyInfoDiv>
     );
 }
 export default myData;
+
+//css
+const MyInfoDiv = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    margin: auto;
+    justify-content: center;
+    align-items: center;
+`;

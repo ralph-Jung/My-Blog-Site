@@ -7,9 +7,11 @@ const postLike = async ({ id }: { id: number }) => {
     return data;
 };
 const postDisLike = async ({ id }: { id: number }) => {
+    console.log(id);
+
     const { data } = await axiosInstance.post(`/v1/posts/${id}/dislike`);
     console.log(data);
-    return data.type;
+    return data;
 };
 
 export { postLike, postDisLike };

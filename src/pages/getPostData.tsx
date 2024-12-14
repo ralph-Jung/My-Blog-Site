@@ -1,6 +1,6 @@
 import { useInfiniteQuery, QueryFunctionContext } from "@tanstack/react-query";
 import { axiosInstance } from "../apis/axiosInstance";
-type LikedUser = {
+export type LikedUser = {
     user: {
         id: number;
         email: string;
@@ -8,7 +8,7 @@ type LikedUser = {
     };
 };
 
-type Post = {
+export type Post = {
     id: number;
     authorId: number;
     title: string;
@@ -31,14 +31,20 @@ const QueryGetData = async (pageParam: number): Promise<GetData> => {
     try {
         console.log(pageParam);
 
-        const response = await axiosInstance.get(
-            `/v1/posts?cursor=${pageParam}&take=2`
-        );
-        console.log(response.data);
+        const response = await axiosInstance.get(`/v1/posts`, {
+            params: {
+                cursor: pageParam,
+                order: ["id_ASC"],
+                take: 10,
+            },
+        });
 
-        return response.data as GetData;
+        console.log(response.data);
+        console.log(response);
+
+        return response as unknown as GetData;
     } catch (error) {
-        console.log(error);
+        console.error("Error fetching data:", error);
         throw new Error("Failed to fetch posts");
     }
 };
@@ -46,14 +52,18 @@ const QueryGetData = async (pageParam: number): Promise<GetData> => {
 const GetPostData = () => {
     return useInfiniteQuery<GetData, Error>({
         queryKey: ["postData"],
-        queryFn: async ({ pageParam }: QueryFunctionContext) => {
+        queryFn: async ({ pageParam }) => {
             return QueryGetData(pageParam as number);
         },
         getNextPageParam: (lastPage) => {
             // nextCursor가 null이면 undefined 반환
-            return lastPage.nextCursor || undefined;
+            console.log("Last Page:", lastPage);
+            console.log("Next Cursor:", lastPage?.nextCursor);
+
+            return lastPage?.nextCursor ?? null;
         },
         initialPageParam: 16,
+        staleTime: 0,
     });
 };
 export default GetPostData;

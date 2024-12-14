@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Modal from "react-modal";
 import { axiosInstance } from "../apis/axiosInstance";
+import styled from "styled-components";
 
 function createPost() {
     // 이건 미리보기 이미지의 url을 넣는 state
@@ -51,23 +52,23 @@ function createPost() {
                         },
                     }
                 );
-                console.log(response?.data);
+                console.log(response);
 
-                // response.data 의 형태가
+                // response의 형태가
                 //{imageUrl: 'aa5072da-874a-4633-a311-4e8e166343e6_1733590439672.png'} 이런식으로 나옴
                 // 내가 필요한 부분은 문자열로 된 'aa5072da-874a-4633-a311-4e8e166343e6_1733590439672.png' 이 부분이기 때문에 다음과 같은 과정으로 분해시킴
 
-                setImageUrl(Object.values(response.data)[0]);
+                setImageUrl(Object.values(response)[0]);
 
                 // console.log(Object.values(response.data));
                 // console.log(Object.values(response.data)[0]);
 
                 if (typeof imageUrl === "string") {
-                    console.log(Object.values(response.data)[0]);
+                    console.log(Object.values(response)[0]);
                 } else {
                     console.error(
                         "서버에서 반환된 데이터가 문자열이 아닙니다:",
-                        response.data
+                        response
                     );
                 }
 
@@ -96,26 +97,91 @@ function createPost() {
             content: content,
             imageUrl: imageUrl,
         });
-        console.log(response.data);
+        console.log(response);
+
         navigate("/");
     };
 
     return (
-        <div>
-            <Modal isOpen={true}>
-                <input placeholder="제목" onChange={handleTitleChange} />
-                <input placeholder="내용" onChange={handleContentChange} />
-                <input
+        <AllDiv>
+            <HeaderDiv>
+                <TitleInput placeholder="제목" onChange={handleTitleChange} />
+                <ContentInput
+                    placeholder="내용"
+                    onChange={handleContentChange}
+                />
+                <ImgInput
                     placeholder="이미지 넣기"
                     type="file"
                     onChange={handleFileUpload}
                     accept="image/png"
                 />
-                <img src={image} alt="추가된 이미지 입니다"></img>
-                <button onClick={handleCreatePost}>게시물 생성하기</button>
-                <button onClick={() => navigate("/")}>홈페이지로 이동</button>
-            </Modal>
-        </div>
+                <img src={image}></img>
+            </HeaderDiv>
+            <FooterDiv>
+                <CreatePostButton onClick={handleCreatePost}>
+                    게시물 생성하기
+                </CreatePostButton>
+                <GoHomeButton onClick={() => navigate("/")}>
+                    홈페이지로 이동
+                </GoHomeButton>
+            </FooterDiv>
+        </AllDiv>
     );
 }
 export default createPost;
+
+//css
+const AllDiv = styled.div`
+    height: 100vh;
+    width: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    justify-content: center;
+    align-content: center;
+`;
+const HeaderDiv = styled.div`
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    flex-grow: 1;
+`;
+
+const TitleInput = styled.input`
+    margin-bottom: 5px;
+    height: 40px;
+    border-radius: 5px;
+`;
+
+const ContentInput = styled.input`
+    display: flex;
+    flex-grow: 1;
+    margin-bottom: 5px;
+    border-radius: 5px;
+`;
+
+const ImgInput = styled.input`
+    display: flex;
+    justify-content: center;
+    border-radius: 5px;
+`;
+
+const FooterDiv = styled.div`
+    height: 10vh;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    align-content: space-between;
+    justify-content: center;
+`;
+
+const CreatePostButton = styled.button`
+    height: 25px;
+    border-radius: 5px;
+    margin-bottom: 1vh;
+`;
+const GoHomeButton = styled.button`
+    height: 25px;
+    border-radius: 5px;
+`;

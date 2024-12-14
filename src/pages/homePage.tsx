@@ -14,9 +14,23 @@ import Spinner from "./spinner";
 import { postLike, postDisLike } from "./postHeart";
 import emptyHeart from "../assets/emptyHeart.png";
 import Heart from "../assets/Heart.png";
+import { LikedUser, Post } from "./getPostData";
+type getData = {
+    authorId: number;
+    content: string;
+    createdAt: string;
+    dislikeCount: number;
+    id: number;
+    imageUrl: string | null;
+    likeCount: number;
+    likeUsers: string[];
+    title: string;
+    updatedAt: string;
+    version: number;
+};
 function homePage() {
     const navigate = useNavigate();
-    const [heart, setHeart] = useState<boolean>(false);
+
     // 기능 1 ,2 : 로그인 , 로그아웃 관련
     const [token, setToken] = useState<string | null>(
         Cookies.get("accessToken") || null
@@ -36,13 +50,13 @@ function homePage() {
     // token을 state로 관리해야할듯
     useEffect(() => {
         const gettoken: string | undefined = Cookies.get("accessToken");
-        setToken(gettoken ?? null);
+        if (gettoken === null || undefined) setToken(null);
     }, [Cookies.get("accessToken")]);
 
     // 기능 3 : 내 정보 불러오기
     const { data } = useQuery({
         queryKey: ["UserInfo", token],
-        queryFn: () => QueryUserInfo(token),
+        queryFn: () => QueryUserInfo(),
         enabled: !!token,
     });
 
@@ -53,15 +67,22 @@ function homePage() {
         hasNextPage,
         isFetching,
     } = GetPostData();
-    const allData = postData?.pages.flatMap((page) => page.data);
+    console.log(typeof postData);
+    console.log(fetchNextPage);
+
+    console.log(postData);
+    console.log(postData?.pages[0]);
+
+    const allData = postData?.pages[0].data;
+
     const { ref, inView } = useInView({
-        threshold: 1,
+        threshold: 0.1,
     });
     useEffect(() => {
-        if (inView) {
-            !isFetching && hasNextPage && fetchNextPage();
+        if (inView && hasNextPage && !isFetching) {
+            fetchNextPage();
         }
-    }, [inView, isFetching, hasNextPage, fetchNextPage]);
+    }, []);
 
     // 기능 5 : 게시물 삭제하기 ( 삭제하기 버튼 누르고 새로고침해야 UI에 반영이 되는 문제가 있었어서 useMutaion 사용 해서 해결 )
     const { mutate } = useMutation({
@@ -132,10 +153,11 @@ function homePage() {
                         {allData?.map((a) => {
                             // const fullImageUrl = `${baseUrl}/${a.imageUrl}`;\
                             const fullUrl = `http://localhost:3000/${a.imageUrl}`;
-                            console.log(fullUrl);
+                            // console.log(fullUrl);
+                            console.log(a.id);
 
                             return (
-                                <div
+                                <PostDiv
                                     key={a.id}
                                     onClick={() =>
                                         goDetailPostData({ id: a.id })
@@ -187,59 +209,12 @@ function homePage() {
                                             삭제하기
                                         </button>
                                     </div>
-                                </div>
+                                </PostDiv>
                             );
                         })}
                         <div ref={ref} style={{ marginTop: "50px" }}>
-                            {/* <Spinner /> */}
+                            <Spinner />
                         </div>
-                        {/* <div>
-                            {a.map(
-                                (a: {
-                                    title: string;
-                                    content: string;
-                                    imageUrl: string;
-                                    id: number;
-                                }) => {
-                                    const fullImageUrl = `${baseUrl}/${a.imageUrl}`;
-                                    return (
-                                        <div>
-                                            <div>{a.title}</div>
-                                            <div>{a.content}</div>
-                                            <img
-                                                src={fullImageUrl}
-                                                alt="이미지가 없습니다."
-                                            />
-                                            <div>{heart}</div>
-                                            <div>
-                                                <button
-                                                    onClick={() =>
-                                                        setHeart(heart + 1)
-                                                    }
-                                                >
-                                                    좋아요
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        setHeart(heart - 1)
-                                                    }
-                                                    disabled={heart === 0}
-                                                >
-                                                    싫어요
-                                                </button>
-                                                <button
-                                                    onClick={() =>
-                                                        DeletePostData(a.id)
-                                                    }
-                                                >
-                                                    삭제하기
-                                                </button>
-                                            </div>
-                                        </div>
-                                    );
-                                }
-                            )}
-                        </div> */}
                     </div>
                 ) : (
                     <></>
@@ -295,4 +270,11 @@ const SignupButton = styled.button`
     &:hover {
         filter: brightness(120%);
     }
+`;
+
+const PostDiv = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    border: 1px solid black;
+    flex-direction: column;
 `;
